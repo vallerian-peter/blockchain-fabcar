@@ -1,0 +1,409 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FabCar - Hyperledger Fabric</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            padding: 8px;
+            margin: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>FabCar Dashboard</h1>
+
+    <form id="addCarForm">
+        <h3>Add New Car</h3>
+        <input type="text" id="carid" placeholder="Car ID (e.g. CAR11)" required>
+        <input type="text" id="make" placeholder="Make" required>
+        <input type="text" id="model" placeholder="Model" required>
+        <input type="text" id="color" placeholder="Color" required>
+        <input type="text" id="owner" placeholder="Owner" required>
+        <button type="submit">Add Car</button>
+    </form>
+
+    <form id="transferOwnerForm">
+        <h3>Transfer Ownership</h3>
+        <input type="text" id="transferCarId" placeholder="Car ID (e.g. CAR1)" required>
+        <input type="text" id="newOwner" placeholder="New Owner Name" required>
+        <button type="submit">Transfer Owner</button>
+    </form>
+
+    <h3>Cars in Ledger:</h3>
+    <table id="carTable">
+        <thead>
+            <tr>
+                <th>Car ID</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Color</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody id="carTableBody">
+        </tbody>
+    </table> -->
+<!-- 
+    <script>
+        const API_BASE = "http://localhost:8080";
+
+        // Load cars on page load
+        window.onload = loadAllCars;
+
+        async function loadAllCars() {
+            try {
+                const response = await fetch(
+                    `${API_BASE}/api/queryallcars`, 
+                    {
+                        method: 'GET'
+                    }
+                );
+                const data = await response.json();
+                const cars = JSON.parse(data.response);
+                const tableBody = document.getElementById('carTableBody');
+                tableBody.innerHTML = "";
+
+                cars.forEach(item => {
+                    const car = item.Record;
+                    const row = `<tr>
+                        <td>${item.Key}</td>
+                        <td>${car.make}</td>
+                        <td>${car.model}</td>
+                        <td>${car.color}</td>
+                        <td>${car.owner}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error("Failed to load cars:", err);
+                alert("Failed to load cars.");
+            }
+        }
+
+        // Handle add car form submit
+        document.getElementById('addCarForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const carid = document.getElementById('carid').value;
+            const make = document.getElementById('make').value;
+            const model = document.getElementById('model').value;
+            const color = document.getElementById('color').value;
+            const owner = document.getElementById('owner').value;
+
+            const response = await fetch(`${API_BASE}/api/addcar/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ carid, make, model, color, owner })
+            });
+
+            if (response.ok) {
+                alert('Car added successfully!');
+                document.getElementById('addCarForm').reset();
+                loadAllCars();
+            } else {
+                alert('Failed to add car.');
+            }
+        });
+
+        // Handle transfer ownership form submit
+        document.getElementById('transferOwnerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const carId = document.getElementById('transferCarId').value;
+            const newOwner = document.getElementById('newOwner').value;
+
+            const response = await fetch(`${API_BASE}/api/changeowner/${carId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ owner: newOwner })
+            });
+
+            if (response.ok) {
+                alert('Ownership transferred successfully!');
+                document.getElementById('transferOwnerForm').reset();
+                loadAllCars();
+            } else {
+                alert('Failed to transfer ownership.');
+            }
+        });
+    </script> -->
+
+<!-- 
+    <script>
+    const API_BASE = "http://localhost:8080";
+
+    // Create API Gateway class to handle backend communication
+    class FabCarAPI {
+        static async getAllCars() {
+            const response = await fetch(`${API_BASE}/api/queryallcars`);
+            if (!response.ok) throw new Error('Failed to fetch cars');
+            const data = await response.json();
+            return JSON.parse(data.response);
+        }
+
+        static async addCar(carData) {
+            const response = await fetch(`${API_BASE}/api/addcar/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(carData)
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Add car failed:", errorData);
+                throw new Error('Failed to add car');
+            }
+        }
+
+        static async transferOwner(carId, newOwner) {
+            const response = await fetch(`${API_BASE}/api/changeowner/${carId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ owner: newOwner })
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Transfer ownership failed:", errorData);
+                throw new Error('Failed to transfer ownership');
+            }
+        }
+    }
+
+    // On page load, fetch cars
+    window.onload = async () => {
+        try {
+            const cars = await FabCarAPI.getAllCars();
+            renderCarTable(cars);
+        } catch (err) {
+            alert("Error loading cars: " + err.message);
+        }
+    };
+
+    // Render table
+    function renderCarTable(cars) {
+        const tableBody = document.getElementById('carTableBody');
+        tableBody.innerHTML = "";
+        cars.forEach(item => {
+            const car = item.Record;
+            const row = `<tr>
+                <td>${item.Key}</td>
+                <td>${car.make}</td>
+                <td>${car.model}</td>
+                <td>${car.color}</td>
+                <td>${car.owner}</td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    // Handle Add Car Form Submit
+    document.getElementById('addCarForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const carid = document.getElementById('carid').value.trim();
+        const make = document.getElementById('make').value.trim();
+        const model = document.getElementById('model').value.trim();
+        const color = document.getElementById('color').value.trim();
+        const owner = document.getElementById('owner').value.trim();
+
+        const carData = { carid, make, model, color, owner };
+
+        try {
+            await FabCarAPI.addCar(carData);
+            alert('Car added successfully!');
+            document.getElementById('addCarForm').reset();
+            const cars = await FabCarAPI.getAllCars();
+            renderCarTable(cars);
+        } catch (err) {
+            alert("Error adding car: " + err.message);
+        }
+    });
+
+    // Handle Transfer Ownership Form Submit
+    document.getElementById('transferOwnerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const carId = document.getElementById('transferCarId').value.trim();
+        const newOwner = document.getElementById('newOwner').value.trim();
+
+        try {
+            await FabCarAPI.transferOwner(carId, newOwner);
+            alert('Ownership transferred successfully!');
+            document.getElementById('transferOwnerForm').reset();
+            const cars = await FabCarAPI.getAllCars();
+            renderCarTable(cars);
+        } catch (err) {
+            alert("Error transferring ownership: " + err.message);
+        }
+    });
+</script>
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FabCar - Hyperledger Fabric</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+        h1 { color: #333; }
+        form { margin-bottom: 20px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { padding: 8px; margin: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>FabCar Dashboard</h1>
+
+    <form id="addCarForm">
+        <h3>Add New Car</h3>
+        <input type="text" id="carid" placeholder="Car ID (e.g. CAR20)" required>
+        <input type="text" id="make" placeholder="Make" required>
+        <input type="text" id="model" placeholder="Model" required>
+        <input type="text" id="color" placeholder="Color" required>
+        <input type="text" id="owner" placeholder="Owner" required>
+        <button type="submit">Add Car</button>
+    </form>
+
+    <form id="transferOwnerForm">
+        <h3>Transfer Ownership</h3>
+        <input type="text" id="transferCarId" placeholder="Car ID to Transfer" required>
+        <input type="text" id="newOwner" placeholder="New Owner" required>
+        <button type="submit">Transfer Owner</button>
+    </form>
+
+    <h3>Cars in Ledger:</h3>
+    <table id="carTable">
+        <thead>
+            <tr>
+                <th>Car ID</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Color</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody id="carTableBody"></tbody>
+    </table>
+
+    <script>
+        const API_BASE = "http://localhost:8080";
+
+        window.onload = loadAllCars;
+
+        async function loadAllCars() {
+            try {
+                const response = await fetch(`${API_BASE}/api/queryallcars`);
+                const data = await response.json();
+                const cars = data.response; // Now response is already parsed!
+
+                const tableBody = document.getElementById('carTableBody');
+                tableBody.innerHTML = "";
+
+                cars.forEach(item => {
+                    const car = item.Record;
+                    const row = `<tr>
+                        <td>${item.Key}</td>
+                        <td>${car.make}</td>
+                        <td>${car.model}</td>
+                        <td>${car.color}</td>
+                        <td>${car.owner}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error("Error loading cars:", err);
+                alert("Failed to load cars.");
+            }
+        }
+
+        document.getElementById('addCarForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const carid = document.getElementById('carid').value;
+            const make = document.getElementById('make').value;
+            const model = document.getElementById('model').value;
+            const color = document.getElementById('color').value;
+            const owner = document.getElementById('owner').value;
+
+            const response = await fetch(`${API_BASE}/api/addcar/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ carid, make, model, color, owner })
+            });
+
+            if (response.ok) {
+                alert('Car added successfully!');
+                document.getElementById('addCarForm').reset();
+                loadAllCars();
+            } else {
+                alert('Failed to add car.');
+            }
+        });
+
+        document.getElementById('transferOwnerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const carId = document.getElementById('transferCarId').value;
+            const newOwner = document.getElementById('newOwner').value;
+
+            const response = await fetch(`${API_BASE}/api/changeowner/${carId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ owner: newOwner })
+            });
+
+            if (response.ok) {
+                alert('Ownership transferred successfully!');
+                document.getElementById('transferOwnerForm').reset();
+                loadAllCars();
+            } else {
+                alert('Failed to transfer ownership.');
+            }
+        });
+    </script>
+</body>
+</html>
